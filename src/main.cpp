@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Servo.h>
 #include <SoftwareSerial.h>
+#include <Time.h>
 /* 
   servoID 
   0 -> TR
@@ -18,13 +19,16 @@
 #define DL 5
 #define RX 11
 #define TX 12
-#define LEDPin 14
+#define LEDPin 13
 
 // make virtual usart
 SoftwareSerial gySerial(RX, TX);
 // gy25 degree & buf
 float Roll,Pitch,Yaw;
 int counter;
+int fc = 40;
+bool isFc = true;
+int befTime;
 unsigned char readBuf[8];
 // make servos
 Servo myservo[6];  
@@ -64,23 +68,28 @@ void loop() {
   // for(int i = 0; i < 6; i++){
   //   setServo(i, 90);
   // }
-  
-  setServo(TR, -40);
-  setServo(MR, -40);
-  // setServo(DR, 0);
-  setServo(TL, -40);
-  setServo(ML, 40);
-  // setServo(DL, 0);
-
+  if(millis() - befTime > 50){
+    setServo(TR, fc);
+    setServo(MR, -fc);
+    // setServo(DR, 0);
+    setServo(TL, -fc);
+    setServo(ML, fc);
+    // setServo(DL, 0);
+    if(isFc) fc --;
+    else fc ++;
+    if(fc < -40 || fc > 40) isFc = !isFc; 
+    befTime = millis();
+  }
   // read gy degrees
   readGy();
+  // setServo(DR, 0);
 
-  // Serial.print("roll= ");
-  // Serial.print(Roll);
-  // Serial.print(" pitch= "); 
-  // Serial.print(Pitch);
-  // Serial.print(" yaw= "); 
-  // Serial.println(Yaw);
+  Serial.print("roll= ");
+  Serial.print(Roll);
+  Serial.print(" pitch= "); 
+  Serial.print(Pitch);
+  Serial.print(" yaw= "); 
+  Serial.println(Yaw);
 
   // delay(100);
 }
@@ -91,7 +100,7 @@ void setBalance(){
 }
 
 void setServo(char servoID, int degree){
-  if(servoID == ML || servoID == TL || servoID == DL) degree = -degree;
+  if(servoID == MR || servoID == TL || servoID == DL) degree = -degree;
   else if(servoID == TR) degree += 20;
   myservo[servoID].write(degree + 90);
 }
