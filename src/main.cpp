@@ -18,7 +18,7 @@
 #define DL 5
 #define RX 11
 #define TX 12
-#define LEDPin 13
+#define LEDPin 14
 
 // make virtual usart
 SoftwareSerial gySerial(RX, TX);
